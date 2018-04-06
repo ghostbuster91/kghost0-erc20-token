@@ -17,15 +17,10 @@ interface ERC20 {
 
 contract Kghost0 is ERC20 {
     uint256 private _totalSupply;
-    uint256 private creationTime;
 
     mapping(address => uint256) private balances;
     mapping(address => mapping(address => uint256)) private allowed;
     mapping(address => uint256) private lastClaimedTime;
-
-    function Kghost0() {
-        creationTime = block.timestamp;
-    }
 
     function transfer(address recipient, uint256 amount) public returns (bool) {
         claimTokensFor(msg.sender);
@@ -72,10 +67,11 @@ contract Kghost0 is ERC20 {
     }
 
     function balanceOfUnclaimed(address tokenOwner) internal constant returns (uint256) {
-        uint256 frequency = 3600;
-        if (block.timestamp - lastClaimedTime[tokenOwner] > 0 && balances[tokenOwner] < 100) {
-            uint256 unclaimed = (block.timestamp - creationTime) / frequency;
-            if (unclaimed >= 100) return 100;
+        uint256 frequency = 60;
+        uint256 maxUnclaimed = 6000;
+        if (block.timestamp - lastClaimedTime[tokenOwner] > 0 && balances[tokenOwner] < maxUnclaimed) {
+            uint256 unclaimed = (block.timestamp - lastClaimedTime[tokenOwner]) / frequency;
+            if (unclaimed >= maxUnclaimed) return maxUnclaimed;
             return unclaimed;
         } else {
             return 0;
