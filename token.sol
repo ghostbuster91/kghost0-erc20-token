@@ -16,11 +16,17 @@ interface ERC20 {
 }
 
 contract Kghost0 is ERC20 {
+    uint256 private maxUnclaimed = 6000;
     uint256 private _totalSupply;
+    uint256 private creationTime;
 
     mapping(address => uint256) private balances;
     mapping(address => mapping(address => uint256)) private allowed;
     mapping(address => uint256) private lastClaimedTime;
+
+    function Kghost0(){
+        creationTime = block.timestamp;
+    }
 
     function transfer(address recipient, uint256 amount) public returns (bool) {
         claimTokensFor(msg.sender);
@@ -66,24 +72,31 @@ contract Kghost0 is ERC20 {
         return _totalSupply;
     }
 
-    function balanceOfUnclaimed(address tokenOwner) internal constant returns (uint256) {
+    function balanceOfUnclaimed(address tokenOwner) private constant returns (uint256) {
         uint256 frequency = 60;
-        uint256 maxUnclaimed = 6000;
-        if (block.timestamp - lastClaimedTime[tokenOwner] > 0 && balances[tokenOwner] < maxUnclaimed) {
-            uint256 unclaimed = (block.timestamp - lastClaimedTime[tokenOwner]) / frequency;
-            if (unclaimed >= maxUnclaimed) return maxUnclaimed;
+        if (block.timestamp - getLastClaimedTime(tokenOwner) > 0 && balances[tokenOwner] < maxUnclaimed) {
+            uint256 unclaimed = (block.timestamp - getLastClaimedTime(tokenOwner)) / frequency;
+            if (unclaimed >= maxUnclaimed){
+                return maxUnclaimed;
+            }
             return unclaimed;
-        } else {
-            return 0;
         }
+        return 0;
     }
 
     function claimTokensFor(address tokenOwner) public {
         uint256 _balanceOfUnclaimed = balanceOfUnclaimed(tokenOwner);
-        if (_balanceOfUnclaimed > 0) {
+        if (_balanceOfUnclaimed > 0 && balances[tokenOwner] < maxUnclaimed ) {
             balances[tokenOwner] += _balanceOfUnclaimed;
             lastClaimedTime[tokenOwner] = block.timestamp;
             _totalSupply += _balanceOfUnclaimed;
         }
+    }
+
+    function getLastClaimedTime(address tokenOwner) private constant returns (uint256) {
+        if(lastClaimedTime[tokenOwner] > 0 ){
+            return lastClaimedTime[tokenOwner];
+        }
+        return creationTime;
     }
 }
