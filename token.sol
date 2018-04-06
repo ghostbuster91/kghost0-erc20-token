@@ -57,4 +57,7 @@ contract Kghost0 is ERC20 {
         return balances[tokenOwner];
     }
 
+    function totalSupply() public constant returns (uint) {
+        return _totalSupply;
+    }
 }
