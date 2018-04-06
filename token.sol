@@ -23,12 +23,13 @@ contract Kghost0 is ERC20 {
     mapping(address => mapping(address => uint256)) private allowed;
     mapping(address => uint256) private lastClaimedTime;
 
-    function Kghost0(){
+    function Kghost0() {
         creationTime = block.timestamp;
     }
 
     function transfer(address recipient, uint256 amount) public returns (bool) {
         claimTokensFor(msg.sender);
+        claimTokensFor(recipient);
         require(amount <= balances[msg.sender]);
 
         balances[msg.sender] -= amount;
@@ -39,7 +40,8 @@ contract Kghost0 is ERC20 {
     }
 
     function transferFrom(address from, address to, uint256 tokens) public returns (bool) {
-        claimTokensFor(msg.sender);
+        claimTokensFor(from);
+        claimTokensFor(to);
         require(tokens <= allowed[from][msg.sender] && tokens <= balances[from]);
 
         balances[from] -= tokens;
@@ -71,16 +73,18 @@ contract Kghost0 is ERC20 {
 
     function balanceOfUnclaimed(address tokenOwner) internal constant returns (uint256) {
         uint256 frequency = 3600;
-        if (balances[tokenOwner] < 100 && creationTime - lastClaimedTime[tokenOwner] > frequency) {
-            return creationTime - lastClaimedTime[tokenOwner] / frequency;
+        if (block.timestamp - lastClaimedTime[tokenOwner] > 0 && balances[tokenOwner] < 100) {
+            uint256 unclaimed = (block.timestamp - creationTime) / frequency;
+            if (unclaimed >= 100) return 100;
+            return unclaimed;
         } else {
             return 0;
         }
     }
 
-    function claimTokensFor(address tokenOwner) internal {
+    function claimTokensFor(address tokenOwner) public {
         uint256 _balanceOfUnclaimed = balanceOfUnclaimed(tokenOwner);
-        if(_balanceOfUnclaimed > 0 ){
+        if (_balanceOfUnclaimed > 0) {
             balances[tokenOwner] += _balanceOfUnclaimed;
             lastClaimedTime[tokenOwner] = block.timestamp;
             _totalSupply += _balanceOfUnclaimed;
