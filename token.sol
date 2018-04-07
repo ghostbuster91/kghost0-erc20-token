@@ -21,7 +21,7 @@ contract Kghost0 is ERC20 {
     uint8 public constant decimals = 0;
 
     uint256 private maxUnclaimed = 6000;
-    uint256 private _totalSupply;
+    uint256 private totalClaimedSupply;
     uint256 private creationTime;
 
     mapping(address => uint256) private balances;
@@ -73,7 +73,7 @@ contract Kghost0 is ERC20 {
     }
 
     function totalSupply() public constant returns (uint) {
-        return _totalSupply;
+        return totalClaimedSupply;
     }
 
     function balanceOfUnclaimed(address tokenOwner) private constant returns (uint256) {
@@ -93,7 +93,7 @@ contract Kghost0 is ERC20 {
         if (_balanceOfUnclaimed > 0 && balances[tokenOwner] < maxUnclaimed) {
             balances[tokenOwner] += _balanceOfUnclaimed;
             lastClaimedTime[tokenOwner] = block.timestamp;
-            _totalSupply += _balanceOfUnclaimed;
+            totalClaimedSupply += _balanceOfUnclaimed;
         }
     }
 
