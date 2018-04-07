@@ -16,6 +16,10 @@ interface ERC20 {
 }
 
 contract Kghost0 is ERC20 {
+    string public constant name  = "kghost0 token";
+    string public constant symbol = "KGH0";
+    uint8 public constant decimals = 0;
+
     uint256 private maxUnclaimed = 6000;
     uint256 private _totalSupply;
     uint256 private creationTime;
@@ -76,7 +80,7 @@ contract Kghost0 is ERC20 {
         uint256 frequency = 60;
         if (block.timestamp - getLastClaimedTime(tokenOwner) > 0 && balances[tokenOwner] < maxUnclaimed) {
             uint256 unclaimed = (block.timestamp - getLastClaimedTime(tokenOwner)) / frequency;
-            if (unclaimed >= maxUnclaimed){
+            if (unclaimed >= maxUnclaimed) {
                 return maxUnclaimed;
             }
             return unclaimed;
@@ -86,7 +90,7 @@ contract Kghost0 is ERC20 {
 
     function claimTokensFor(address tokenOwner) public {
         uint256 _balanceOfUnclaimed = balanceOfUnclaimed(tokenOwner);
-        if (_balanceOfUnclaimed > 0 && balances[tokenOwner] < maxUnclaimed ) {
+        if (_balanceOfUnclaimed > 0 && balances[tokenOwner] < maxUnclaimed) {
             balances[tokenOwner] += _balanceOfUnclaimed;
             lastClaimedTime[tokenOwner] = block.timestamp;
             _totalSupply += _balanceOfUnclaimed;
@@ -94,7 +98,7 @@ contract Kghost0 is ERC20 {
     }
 
     function getLastClaimedTime(address tokenOwner) private constant returns (uint256) {
-        if(lastClaimedTime[tokenOwner] > 0 ){
+        if (lastClaimedTime[tokenOwner] > 0) {
             return lastClaimedTime[tokenOwner];
         }
         return creationTime;
